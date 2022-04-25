@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-using matrix = vector<vector<double> >;
+using matrix = vector<vector<double>>;
 
 template <class T>
 std::vector <std::vector<T> > multiply(std::vector <std::vector<T> > &a, std::vector <std::vector<T> > &b)
@@ -21,8 +21,6 @@ std::vector <std::vector<T> > multiply(std::vector <std::vector<T> > &a, std::ve
     }
     return c; 
 }
-
-void initialise(matrix& A, matrix& B);
 
 int main(){
     matrix a(2, vector<double>(2));

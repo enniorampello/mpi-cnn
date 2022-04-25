@@ -1,3 +1,5 @@
+.vscode
+main.dSYM
 # Prerequisites
 *.d
 
@@ -30,6 +32,3 @@
 *.exe
 *.out
 *.app
-
-.vscode
-main.dSYM
