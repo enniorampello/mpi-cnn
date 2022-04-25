@@ -12,3 +12,9 @@ void print_matrix(matrix sample){
         cout<<endl;
     }
 }
+
+void print_vector(vector<double> sample){
+    for (int i = 0; i < sample.size(); i++){
+            cout << sample[i] <<endl;
+    }
+}

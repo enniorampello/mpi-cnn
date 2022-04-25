@@ -40,10 +40,7 @@ class CNN {
         void init_weights();
 
         void load_image(matrix sample);
-
         
-        void relu(matrix &sample);
-        matrix max_pool(matrix sample); // for a single image
         void fwd_pass(); // for the fully connected layer
         vector<double> softmax(vector<double> out);
 
@@ -54,12 +51,14 @@ class CNN {
         CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate);
         void train(matrix sample); // call this for every sample
         matrix convolution(matrix sample, matrix filter); // for a single image
+        void relu(matrix &sample);
+        matrix max_pool(matrix sample); // for a single image
         
 };
 
 
 int matrix_inner_product(matrix a, matrix b){
-    int result = 0;
+    double result = 0.0;
     for(int i=0; i<a.size();i++){
         result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
     }
@@ -112,19 +111,18 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
 
 matrix CNN::convolution(matrix sample, matrix filter){
     // output size = [(W−K+2P)/S]+1
-    int output_size = 1 + (sample.size() - filter_size)/stride;
+    int output_size =  (1 + sample.size() - filter_size)/stride;
     matrix output = matrix(output_size, vector<double>(output_size));
     for(int i =0; i<output_size; i++){
         for(int j=0; j<output_size;j++){
             matrix tmp = matrix(filter_size, vector<double>(filter_size));
-            for(int k=0;k<output_size;k++){
+            for(int k=0;k<filter_size;k++){
             vector<double>::const_iterator first = sample[i+k].begin() + j;
             vector<double>::const_iterator last = sample[i+k].begin() + j +  filter_size;
             vector<double> newVec(first, last);
             tmp[k] = newVec;
             }
             output[i][j] = matrix_inner_product(filter, tmp);
-            print_matrix(tmp);
         }
     }
     return output;

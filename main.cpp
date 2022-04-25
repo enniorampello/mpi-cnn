@@ -1,7 +1,6 @@
 #include <vector>
 #include <iostream>
 #include "cnn.h"
-#include "utils.h"
 
 using namespace std;
 using matrix = vector<vector<double>>;
@@ -45,43 +44,45 @@ int main(){
     //     }
     //     cout << endl;
     // }
-    CNN model = CNN(3, 2, 1, 1, 0, 0.0);
-    cout<<"init completed \n";
-    matrix test = matrix(3, vector<double>(3)); 
-    matrix filter = matrix(3, vector<double>(3));
-    test[0][0] = 1;
+    int filter_sze = 2;
+    int max_pool_sze = 2;
+    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 0, 0.0);
+    matrix test = matrix(4, vector<double>(4)); 
+    matrix filter = matrix(filter_sze, vector<double>(filter_sze));
+    test[0][0] = 10;
     test[0][1] = 1;
     test[0][2] = 1;
+    test[0][3] = 0.4;
 
     test[1][0] = 1;
     test[1][1] = 1;
     test[1][2] = 1;
+    test[1][3] = 2;
 
     test[2][0] = 1;
     test[2][1] = 1;
     test[2][2] = 1;
+    test[1][3] = 2;
 
-    filter[0][0] = -1;
+    test[3][0] = 1;
+    test[3][1] = 0.5;
+    test[3][2] = 2.0;
+    test[3][3] = 0.8;
+
+    filter[0][0] = 1;
     filter[0][1] = -1;
-    filter[0][2] = -1;
 
     filter[1][0] = -1;
     filter[1][1] = -1;
-    filter[1][2] = -1;
-
-    filter[2][0] = -1;
-    filter[2][1] = -1;
-    filter[2][2] = -1;
-    cout<<"mats initialized completed \n";
     
     matrix ans = model.convolution(test, filter);
-    for (int i = 0; i < ans.size(); i++){
-        for (int j = 0; j < ans[i].size(); j++){
-            cout << ans[i][j] << " ";
-        }
-        cout<<endl;
-    }
-
+    print_matrix(ans);
+    model.relu(ans);
+    print_matrix(ans);
+    cout<<endl;
+    print_matrix(test);
+    matrix ans1 = model.max_pool(test);
+    print_matrix(ans1);
 
     return 0;
 }
