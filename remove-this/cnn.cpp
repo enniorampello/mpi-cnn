@@ -7,6 +7,7 @@
 #include "cnn.h"
 #define max(a,b) ((a)>(b)?(a):(b))
 
+
 int matrix_inner_product(matrix a, matrix b){
     int result = 0;
     for(int i=0; i<a.size();i++){
@@ -23,10 +24,10 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     n_nodes = num_nodes;
     lr = learning_rate;
 
-    init_normal_distribution();
-    init_filters();
-    init_biases();
-    init_weights();
+    // init_normal_distribution();
+    // init_filters();
+    // init_biases();
+    // init_weights();
 }
 
 void CNN::init_normal_distribution(){
