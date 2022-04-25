@@ -1,6 +1,6 @@
 #include <random>
-
 #include "cnn.h"
+#define max(a,b) ((a)>(b)?(a):(b))
 
 
 CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate){
@@ -44,8 +44,77 @@ void CNN::init_weights(){
     // init the matrix of weights for the fully connected layer
 }
 
-void CNN::convolution(){
+matrix CNN::convolution(matrix sample, matrix filter){
     for(int i =0; i<CNN::image.size(); i++){
 
     }
 }
+
+void CNN::relu(matrix &sample){
+    for (int i = 0; i < sample.size(); i++)
+    {
+        for (int j = 0; j < sample[i].size(); j++)
+        {
+            if(sample[i][j] < 0.0){
+                sample[i][j] = 0.0;
+            }
+        }
+    }
+}
+
+
+matrix CNN::max_pool(matrix sample){
+    int s = sample.size()/max_pool_size;
+    matrix out( s, vector<double>(s, 0));
+    for (size_t i = 0; i < s; i++)
+    {
+        for (size_t j = 0; j < s; j++)
+        {
+            for (size_t k = 0; k < max_pool_size; k++)
+            {
+                for (size_t l = 0; l < max_pool_size; l++)
+                {
+                    float val = sample[i*max_pool_size + k][j*max_pool_size + l];
+                    out[i][j] = max(out[i][j], val);      
+                }   
+            }
+        }
+    }
+
+    return out; 
+
+}
+
+//testing the convolution function
+// void main(){
+
+//     matrix test; 
+//     matrix filter;
+//     test[0][0] = 1;
+//     test[0][1] = 1;
+//     test[0][2] = 1;
+
+//     test[1][0] = 1;
+//     test[1][1] = 1;
+//     test[1][2] = 1;
+
+//     test[2][0] = 1;
+//     test[2][1] = 1;
+//     test[2][2] = 1;
+
+//     filter[0][0] = -1;
+//     filter[0][1] = -1;
+//     filter[0][2] = -1;
+
+//     filter[1][0] = -1;
+//     filter[1][1] = -1;
+//     filter[1][2] = -1;
+
+//     filter[2][0] = -1;
+//     filter[2][1] = -1;
+//     filter[2][2] = -1;
+
+//     matrix ans = convolution(test, filter);
+    
+
+// }

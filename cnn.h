@@ -1,6 +1,5 @@
 #include <vector>
 #include <random>
-
 using namespace std;
 using matrix = vector<vector<double>>;
 
@@ -35,9 +34,9 @@ class CNN {
 
         void load_image(matrix sample);
 
-        void convolution(); // for a single image
-        void relu();
-        void max_pool(); // for a single image
+        matrix convolution(matrix sample, matrix filter); // for a single image
+        void relu(matrix &sample);
+        matrix max_pool(matrix sample); // for a single image
         void fwd_pass(); // for the fully connected layer
         vector<double> softmax(vector<double> out);
 
