@@ -43,3 +43,9 @@ void CNN::init_biases(){
 void CNN::init_weights(){
     // init the matrix of weights for the fully connected layer
 }
+
+void CNN::convolution(){
+    for(int i =0; i<CNN::image.size(); i++){
+
+    }
+}
