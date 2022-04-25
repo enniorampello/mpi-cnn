@@ -1,7 +1,19 @@
 #include <random>
+#include <numeric>
+#include <iostream>
+#include <vector>
+#include <functional>
+
 #include "cnn.h"
 #define max(a,b) ((a)>(b)?(a):(b))
 
+int matrix_inner_product(matrix a, matrix b){
+    int result = 0;
+    for(int i=0; i<a.size();i++){
+        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
+    }
+    return result;
+}
 
 CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate){
     filter_size = fltr_sz;
@@ -45,9 +57,23 @@ void CNN::init_weights(){
 }
 
 matrix CNN::convolution(matrix sample, matrix filter){
-    for(int i =0; i<CNN::image.size(); i++){
+    // output size = [(W−K+2P)/S]+1
+    int output_size = 1 + (sample.size() - filter_size)/stride;
+    matrix output = matrix(output_size, vector<double>(output_size));
 
+    for(int i =0; i<output_size; i++){
+        for(int j=0; j<output_size;j++){
+            matrix tmp = matrix(filter_size, vector<double>(filter_size));
+            for(int k=0;k<output_size;k++){
+            vector<double>::const_iterator first = sample[i+k].begin() + j;
+            vector<double>::const_iterator last = sample[i+k].begin() + j +  filter_size;
+            vector<double> newVec(first, last);
+            tmp[k] = newVec;
+            }
+            output[i][j] = matrix_inner_product(filter, tmp);
+        }
     }
+    return output;
 }
 
 void CNN::relu(matrix &sample){
@@ -118,3 +144,4 @@ matrix CNN::max_pool(matrix sample){
     
 
 // }
+

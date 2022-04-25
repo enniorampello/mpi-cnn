@@ -1,5 +1,9 @@
 #include <vector>
 #include <random>
+#include <numeric>
+#include <iostream>
+#include <vector>
+#include <functional>
 using namespace std;
 using matrix = vector<vector<double>>;
 
