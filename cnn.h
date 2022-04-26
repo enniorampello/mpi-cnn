@@ -129,25 +129,15 @@ matrix CNN::convolution(matrix sample, matrix filter){
     return output;
 }
 
-// void CNN::relu(matrix &sample){
-//     for (int i = 0; i < sample.size(); i++)
-//     {
-//         for (int j = 0; j < sample[i].size(); j++)
-//         {
-//             if(sample[i][j] < 0.0){
-//                 sample[i][j] = 0.0;
-//             }
-//         }
-//     }
-// }
 
 void CNN::relu(matrix &sample){
-    for (int i = 0; i < sample.size(); i++)
-    {
-        replace_if(sample[i].begin(), sample[i].end(), [](double &i) {
-        return i < 0.0;
-    }, 0.0);
-    }
+    
+    for_each(
+        sample.begin(), 
+        sample.end(),
+        [](vector<double> &tmp){
+            replace_if(tmp.begin(), tmp.end(), [](double &i){return i<0.0;}, 0.0);
+            });
 }
 
 
