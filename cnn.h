@@ -54,7 +54,9 @@ class CNN {
         matrix convolution(matrix sample, matrix filter); // for a single image
         void relu(matrix &sample);
         matrix max_pool(matrix sample); // for a single image
-        
+
+        // move the following functions to private after testing
+        vector<double> softmax_backprop(vector<double> out, int label);
 };
 
 
@@ -65,8 +67,6 @@ int matrix_inner_product(matrix a, matrix b){
     }
     return result;
 }
-
-
 
 
 CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate){
@@ -164,37 +164,8 @@ matrix CNN::max_pool(matrix sample){
 
 }
 
-//testing the convolution function
-// void main(){
-
-//     matrix test; 
-//     matrix filter;
-//     test[0][0] = 1;
-//     test[0][1] = 1;
-//     test[0][2] = 1;
-
-//     test[1][0] = 1;
-//     test[1][1] = 1;
-//     test[1][2] = 1;
-
-//     test[2][0] = 1;
-//     test[2][1] = 1;
-//     test[2][2] = 1;
-
-//     filter[0][0] = -1;
-//     filter[0][1] = -1;
-//     filter[0][2] = -1;
-
-//     filter[1][0] = -1;
-//     filter[1][1] = -1;
-//     filter[1][2] = -1;
-
-//     filter[2][0] = -1;
-//     filter[2][1] = -1;
-//     filter[2][2] = -1;
-
-//     matrix ans = convolution(test, filter);
-    
-
-// }
-
+vector<double> CNN::softmax_backprop(vector<double> out, int label){
+    vector<double> gradient = vector<double>(out.size(), 0);
+    cout << gradient;
+    return gradient;
+}
