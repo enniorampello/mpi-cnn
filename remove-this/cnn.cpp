@@ -3,71 +3,18 @@
 #include <iostream>
 #include <vector>
 #include <functional>
-#include <algorithm>
-#include "utils.h"
-using namespace std;
-using matrix = vector<vector<double>>;
 
+#include "cnn.h"
 #define max(a,b) ((a)>(b)?(a):(b))
 
 
-class CNN {
-    private:
-        // random_device rd;
-        // mt19937 gen;
-        // normal_distribution<double> normal;
-
-        int filter_size;
-        int max_pool_size;
-        int n_filters;
-        int stride;
-        int n_nodes;
-        double lr;
-
-        matrix image;
-        vector<matrix> image_conv; // sample after convolution.
-        vector<matrix> image_pool; // sample after max_pool
-        
-        vector<matrix> filters;
-        vector<double> bias;
-        matrix weights;
-
-        vector<double> out;
-
-        void init_normal_distribution();
-
-        void init_filters();
-        void init_biases();
-        void init_weights();
-
-        void load_image(matrix sample);
-        
-        void fwd_pass(); // for the fully connected layer
-        vector<double> softmax(vector<double> out);
-
-        void fwd_prop();
-        void back_prop(); // update all the weights
-
-    public:
-        CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate);
-        void train(matrix sample); // call this for every sample
-        matrix convolution(matrix sample, matrix filter); // for a single image
-        void relu(matrix &sample);
-        matrix max_pool(matrix sample); // for a single image
-        
-};
-
-
 int matrix_inner_product(matrix a, matrix b){
-    double result = 0.0;
+    int result = 0;
     for(int i=0; i<a.size();i++){
         result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
     }
     return result;
 }
-
-
-
 
 CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate){
     filter_size = fltr_sz;
@@ -83,41 +30,42 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     // init_weights();
 }
 
-// void CNN::init_normal_distribution(){
-//     gen = mt19937(rd());
-//     normal = normal_distribution<double>(0, 1); // (mean, std)
-// }
+void CNN::init_normal_distribution(){
+    gen = mt19937(rd());
+    normal = normal_distribution<double>(0, 1); // (mean, std)
+}
 
-// void CNN::init_filters(){
-//     filters = vector<matrix>(n_filters, matrix(filter_size, vector<double>(filter_size)));
-//     for (int i = 0; i < filters[0].size(); i++){
-//         for (int j = 0; j < filter_size; j++){
-//             for (int k = 0; k < filter_size; k++){
-//                 filters[i][j][k] = normal(gen); // sample from the normal distribution
-//             }   
-//         }
-//     }
-// }
+void CNN::init_filters(){
+    filters = vector<matrix>(n_filters, matrix(filter_size, vector<double>(filter_size)));
+    for (int i = 0; i < filters[0].size(); i++){
+        for (int j = 0; j < filter_size; j++){
+            for (int k = 0; k < filter_size; k++){
+                filters[i][j][k] = normal(gen); // sample from the normal distribution
+            }   
+        }
+    }
+}
 
-// void CNN::init_biases(){
-//     bias = vector<double>(n_filters);
-//     for (int i = 0; i < n_filters; i++){
-//         bias[i] = normal(gen);
-//     }
-// }
+void CNN::init_biases(){
+    bias = vector<double>(n_filters);
+    for (int i = 0; i < n_filters; i++){
+        bias[i] = normal(gen);
+    }
+}
 
-// void CNN::init_weights(){
-//     // init the matrix of weights for the fully connected layer
-// }
+void CNN::init_weights(){
+    // init the matrix of weights for the fully connected layer
+}
 
 matrix CNN::convolution(matrix sample, matrix filter){
     // output size = [(W−K+2P)/S]+1
-    int output_size =  (1 + sample.size() - filter_size)/stride;
+    int output_size = 1 + (sample.size() - filter_size)/stride;
     matrix output = matrix(output_size, vector<double>(output_size));
+
     for(int i =0; i<output_size; i++){
         for(int j=0; j<output_size;j++){
             matrix tmp = matrix(filter_size, vector<double>(filter_size));
-            for(int k=0;k<filter_size;k++){
+            for(int k=0;k<output_size;k++){
             vector<double>::const_iterator first = sample[i+k].begin() + j;
             vector<double>::const_iterator last = sample[i+k].begin() + j +  filter_size;
             vector<double> newVec(first, last);
@@ -129,17 +77,17 @@ matrix CNN::convolution(matrix sample, matrix filter){
     return output;
 }
 
-
 void CNN::relu(matrix &sample){
-    
-    for_each(
-        sample.begin(), 
-        sample.end(),
-        [](vector<double> &tmp){
-            replace_if(tmp.begin(), tmp.end(), [](double &i){return i<0.0;}, 0.0);
-            });
+    for (int i = 0; i < sample.size(); i++)
+    {
+        for (int j = 0; j < sample[i].size(); j++)
+        {
+            if(sample[i][j] < 0.0){
+                sample[i][j] = 0.0;
+            }
+        }
+    }
 }
-
 
 
 matrix CNN::max_pool(matrix sample){
