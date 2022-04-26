@@ -49,6 +49,7 @@ int main(){
     CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 0, 0.0);
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
+    
     test[0][0] = 10;
     test[0][1] = 1;
     test[0][2] = 1;

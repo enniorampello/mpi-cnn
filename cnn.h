@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <algorithm>
 #include "utils.h"
 using namespace std;
 using matrix = vector<vector<double>>;
@@ -128,17 +129,27 @@ matrix CNN::convolution(matrix sample, matrix filter){
     return output;
 }
 
+// void CNN::relu(matrix &sample){
+//     for (int i = 0; i < sample.size(); i++)
+//     {
+//         for (int j = 0; j < sample[i].size(); j++)
+//         {
+//             if(sample[i][j] < 0.0){
+//                 sample[i][j] = 0.0;
+//             }
+//         }
+//     }
+// }
+
 void CNN::relu(matrix &sample){
     for (int i = 0; i < sample.size(); i++)
     {
-        for (int j = 0; j < sample[i].size(); j++)
-        {
-            if(sample[i][j] < 0.0){
-                sample[i][j] = 0.0;
-            }
-        }
+        replace_if(sample[i].begin(), sample[i].end(), [](double &i) {
+        return i < 0.0;
+    }, 0.0);
     }
 }
+
 
 
 matrix CNN::max_pool(matrix sample){
