@@ -84,3 +84,20 @@ double multiply(matrix a, matrix b, int flag){
     return result;
 
 }
+
+template <class T>
+ vector<T> vector_addition(vector<T> &a, vector<T>&b)
+ {   
+     vector<T> c;
+     transform(a.begin(), a.end(), b.begin(), back_inserter(c), plus<double>());
+     return c;
+ }
+
+ template <class T>
+ vector<vector<T>> matrix_addition(vector <vector<T> > &a, vector <vector<T> > &b)
+ {
+     vector<vector<T>> c(a.size(), vector<T>(a[0].size(), 0));
+     for(int i=0; i<c.size();i++)
+         c[i] = vector_addition(a[i], b[i]);
+    return c;
+}
