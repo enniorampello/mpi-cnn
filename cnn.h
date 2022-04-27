@@ -58,17 +58,8 @@ class CNN {
         matrix max_pool(matrix sample); // for a single image
 
         // move the following functions to private after testing
-        vector<double> softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label);
+        matrix softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label);
 };
-
-
-int matrix_inner_product(matrix a, matrix b){
-    double result = 0.0;
-    for(int i=0; i<a.size();i++){
-        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
-    }
-    return result;
-}
 
 
 CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate){
@@ -125,7 +116,7 @@ matrix CNN::convolution(matrix sample, matrix filter){
             vector<double> newVec(first, last);
             tmp[k] = newVec;
             }
-            output[i][j] = matrix_inner_product(filter, tmp);
+            output[i][j] = multiply(filter, tmp, 0);
         }
     }
     return output;
@@ -166,34 +157,55 @@ matrix CNN::max_pool(matrix sample){
 
 }
 
-vector<double> CNN::softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label){
+matrix CNN::softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label){
     vector<double> d_L_d_out = vector<double>(out.size(), 0);
     vector<double> t_exp = vector<double>(out.size());
     vector<double> d_out_d_t = vector<double>(out.size());
+    vector<double> d_L_d_t = vector<double>(out.size());
+    vector<double> d_L_d_b = vector<double>(out.size());
     vector<double> d_t_d_w = vector<double>(in_flat.size());
-    vector<double> d_L_d_inputs = vector<double>(in_flat.size());
-    matrix d_L_d_w = matrix(in_flat.size(), vector<double>(n_nodes));
+    vector<double> d_L_d_inputs_flat = vector<double>(in_flat.size());
+    matrix d_L_d_inputs = matrix(in.size(), vector<double>(in[0].size()));
+    matrix d_L_d_w = matrix(in_flat.size(), vector<double>(out.size()));
     float d_t_d_b = 1;
     float sum;
 
     d_L_d_out[label] = -1 / out[label];
 
-    for (int i = 0; i < out.size(); i++)
+    for (auto i = 0; i < out.size(); i++)
         t_exp[i] = exp(out[i]);
     
     for_each(t_exp.begin(), t_exp.end(), [&] (float n) {
         sum += n;
     });
 
-    // d_out_d_t = -t_exp[label] * t_exp / (S ** 2)
-    for (int i = 0; i < out.size(); i++)
+    for (auto i = 0; i < out.size(); i++)
         d_out_d_t[i] = -t_exp[label] * t_exp[i] / pow(sum, 2);
-    
     d_out_d_t[label] = t_exp[label] * (sum - t_exp[label]) / pow(sum, 2);
 
+    for (auto i = 0; i < in_flat.size(); i++)
+        d_t_d_w[i] = in_flat[i];
     
+    for (auto i = 0; i < out.size(); i++)
+        d_L_d_t[i] = d_L_d_out[label] * d_out_d_t[i];
+
+    // d_L_d_w = d_t_d_w[np.newaxis].T @ d_L_d_t[np.newaxis]
+    d_L_d_w = multiply(d_t_d_w, d_L_d_t);
+    d_L_d_b = d_L_d_t;
+    d_L_d_inputs_flat = multiply(d_L_d_t, weights);
+
+    for (auto i = 0; i < weights.size(); i++)
+        for (auto j = 0; j < weights[0].size(); j++)
+            weights[i][j] -= lr * d_L_d_w[i][j];
+    for (auto i = 0; i < out.size(); i++)
+        bias[i] -= lr * d_L_d_b[i];
     
-
-
-    return gradient;
+    int idx = 0;
+    for (auto i = 0; i < d_L_d_inputs.size(); i++)
+        for (auto j = 0; j < d_L_d_inputs[0].size(); j++){
+            d_L_d_inputs[i][j] = d_L_d_inputs_flat[idx];
+            idx++;
+        }
+    
+    return d_L_d_inputs;
 }
