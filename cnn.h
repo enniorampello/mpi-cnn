@@ -12,6 +12,9 @@ using matrix = vector<vector<double>>;
 
 #define max(a,b) ((a)>(b)?(a):(b))
 
+random_device rd;
+mt19937 gen = mt19937(rd());
+normal_distribution<double> normal = normal_distribution<double>(0, 1); 
 
 class CNN {
     private:
@@ -36,8 +39,6 @@ class CNN {
         vector<double> softmax_inp;
         vector<double> out;
 
-        void init_normal_distribution();
-
         void init_filters();
         void init_biases();
         void init_weights();
@@ -54,10 +55,6 @@ class CNN {
         void back_prop(); // update all the weights
 
     public:
-        random_device rd;
-        mt19937 gen;
-        normal_distribution<double> normal;
-
         CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate);
         void train(matrix sample); // call this for every sample
         
@@ -88,15 +85,9 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     lr = learning_rate;
     num_classes = 10;
 
-    init_normal_distribution();
     init_filters();
     init_biases();
     init_weights();
-}
-
-void CNN::init_normal_distribution(){
-    gen = mt19937(rd());
-    normal = normal_distribution<double>(0, 1); // (mean, std)
 }
 
 void CNN::init_filters(){
