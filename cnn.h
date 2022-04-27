@@ -63,6 +63,11 @@ class CNN {
         void fwd_prop(matrix input_img);
         
         // move the following functions to private after testing
+        matrix softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label);
+
+        matrix max_pool_backprop(matrix last_input, matrix d_L_d_out);
+
+        matrix convolution_backprop(matrix last_input, matrix d_L_d_out);
         matrix softmax_backprop(int label);
 };
 
@@ -313,3 +318,102 @@ matrix CNN::softmax_backprop(int label){
 
     return d_L_d_inputs;
 }
+
+
+matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
+    //TODO: ask danny if the "last input" is the "conv input" or something else
+    matrix d_L_d_input = matrix(last_input.size(), vector<double>(last_input[0].size())); 
+    
+    int s = last_input.size()/max_pool_size;
+
+    int max_val = -1;
+    int max_k = 0;
+    int max_l = 0;
+
+    matrix out( s, vector<double>(s, 0));
+    for (size_t i = 0; i < s; i++)
+    {
+        for (size_t j = 0; j < s; j++)
+        {
+
+            for (size_t k = 0; k < max_pool_size; k++)
+            {
+                for (size_t l = 0; l < max_pool_size; l++)
+                {
+                    float val = last_input[i*max_pool_size + k][j*max_pool_size + l];
+                    if(max_val < val){
+                        max_val = val;
+                        max_k = k;
+                        max_l = l;
+                    }
+                    
+                          
+                }   
+            }
+            d_L_d_input[i*max_pool_size + max_k][i*max_pool_size + max_l] = d_L_d_out[i][j];
+        }
+    }
+
+    return d_L_d_input; 
+}
+matrix multiply_scalar_matrix(double val, matrix tmp){
+    //function to multiply a scalar and a matrix
+
+
+    for (size_t i = 0; i < tmp.size(); i++)
+    {
+        for (size_t j = 0; j < tmp[0].size(); j++)
+        {
+            tmp[i][j] *= val;
+        }
+        
+    }
+    return tmp;
+}
+
+matrix sum_matrices(matrix a, matrix b){
+    //element wise addition of 2 matrices
+
+    for (size_t i = 0; i < a.size(); i++)
+    {
+        for (size_t j = 0; j < a[0].size(); j++)
+        {
+            a[i][j] += b[i][j];
+        }
+        
+    }
+    return a;
+    
+}
+
+matrix CNN::convolution_backprop(matrix last_input, matrix d_L_d_out){
+
+    //assuming filters are only 1
+    matrix d_L_d_filters = matrix(filter_size, vector<double>(filter_size)); 
+
+    int output_size =  (1 + last_input.size() - filter_size)/stride;
+    // matrix output = matrix(output_size, vector<double>(output_size));
+
+    
+    for(int i =0; i<output_size; i++){
+        for(int j=0; j<output_size;j++){
+
+            matrix tmp = matrix(filter_size, vector<double>(filter_size));
+            
+            for(int k=0;k<filter_size;k++){
+            vector<double>::const_iterator first = last_input[i+k].begin() + j;
+            vector<double>::const_iterator last = last_input[i+k].begin() + j +  filter_size;
+            vector<double> newVec(first, last);
+            tmp[k] = newVec;
+            }
+
+
+            d_L_d_filters = sum_matrices(d_L_d_filters, multiply_scalar_matrix(d_L_d_out[i][j], tmp));
+        }
+    }
+
+    filters[0] = sum_matrices(filters[0], multiply_scalar_matrix(-1*lr, d_L_d_filters));
+    return filters[0];
+
+}
+
