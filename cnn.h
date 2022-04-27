@@ -15,10 +15,6 @@ using matrix = vector<vector<double>>;
 
 class CNN {
     private:
-        // random_device rd;
-        // mt19937 gen;
-        // normal_distribution<double> normal;
-
         int filter_size;
         int max_pool_size;
         int n_filters;
@@ -36,7 +32,7 @@ class CNN {
         matrix weights;
 
         matrix conv_output; // convolutional block output
-        vector<double> penultimate_output; // flatened output
+        vector<double> conv_out_flat; // flatened output
         vector<double> softmax_inp;
         vector<double> out;
 
@@ -51,13 +47,17 @@ class CNN {
         matrix convolution(matrix sample, matrix filter); // for a single image
         void relu(matrix &sample);
 
-        void flatten(matrix tmp);
+        void flatten(matrix tmp); // TODO 
         void fully_connected(); // for the fully connected layer
         void softmax();
 
         void back_prop(); // update all the weights
 
     public:
+        random_device rd;
+        mt19937 gen;
+        normal_distribution<double> normal;
+
         CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate);
         void train(matrix sample); // call this for every sample
         
@@ -71,6 +71,7 @@ class CNN {
         matrix max_pool_backprop(matrix last_input, matrix d_L_d_out);
 
         matrix convolution_backprop(matrix last_input, matrix d_L_d_out);
+        matrix softmax_backprop(int label);
 };
 
 
@@ -92,25 +93,43 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     lr = learning_rate;
     num_classes = 10;
 
-    // init_normal_distribution();
-    // init_filters();
-    // init_biases();
-    // init_weights();
+    init_normal_distribution();
+    init_filters();
+    init_biases();
+    init_weights();
 }
 
-// void CNN::init_normal_distribution(){
-//     gen = mt19937(rd());
-//     normal = normal_distribution<double>(0, 1); // (mean, std)
-// }
+void CNN::init_normal_distribution(){
+    gen = mt19937(rd());
+    normal = normal_distribution<double>(0, 1); // (mean, std)
+}
 
 void CNN::init_filters(){
-    filters.push_back(matrix(filter_size, vector<double>(filter_size)));
-    filters[0][0][0] = 1;
-    filters[0][0][1] = -1;
-
-    filters[0][1][0] = -1;
-    filters[0][1][1] = -1;
+    filters = vector<matrix>(n_filters, matrix(filter_size, vector<double>(filter_size)));
+    for (int i = 0; i < filters[0].size(); i++){
+        for (int j = 0; j < filter_size; j++){
+            for (int k = 0; k < filter_size; k++){
+                filters[i][j][k] = normal(gen); // sample from the normal distribution
+            }   
+        }
+    }
 }
+
+void CNN::init_biases(){
+    bias = vector<double>(n_filters);
+    for (int i = 0; i < n_filters; i++){
+        bias[i] = normal(gen);
+    }
+}
+
+// void CNN::init_filters(){
+//     filters.push_back(matrix(filter_size, vector<double>(filter_size)));
+//     filters[0][0][0] = 1;
+//     filters[0][0][1] = -1;
+
+//     filters[0][1][0] = -1;
+//     filters[0][1][1] = -1;
+//}
 
 
 //     bias = vector<double>(n_filters);
@@ -122,9 +141,9 @@ void CNN::init_filters(){
 void CNN::init_weights(){
 //     // init the matrix of weights for the fully connected layer
 //
-    weights = matrix(penultimate_output.size(), vector<double>(num_classes));
+    weights = matrix(729, vector<double>(num_classes));
     for(int c=0;c<num_classes;c++){
-        for(int i=0;i<penultimate_output.size();i++){
+        for(int i=0;i<729;i++){
                 weights[i][c] = 0.01+0.1*c + i/10.0; 
             }
     }
@@ -132,16 +151,16 @@ void CNN::init_weights(){
     
 }
 
-void CNN::init_biases(){
-//     // init the matrix of weights for the fully connected layer
-//
+// void CNN::init_biases(){
+// //     // init the matrix of weights for the fully connected layer
+// //
 
-    for(int i=0;i<num_classes;i++){
-        bias.push_back(0.15 * i/10.0) ; 
-    }
+//     for(int i=0;i<num_classes;i++){
+//         bias.push_back(0.15 * i/10.0) ; 
+//     }
     
 
-}
+// }
 
 
 matrix CNN::convolution(matrix sample, matrix filter){
@@ -205,9 +224,9 @@ matrix CNN::max_pool(matrix sample){
 
 
 void CNN::flatten(matrix tmp){
-    
+    conv_out_flat.clear();
     for(auto && v : tmp){
-        penultimate_output.insert(penultimate_output.end(), v.begin(), v.end());
+        conv_out_flat.insert(conv_out_flat.end(), v.begin(), v.end());
     }
 
 }
@@ -219,20 +238,19 @@ void CNN::softmax(){
         tmp[i] = exp(tmp[i]);
         tot_sum += tmp[i];
     }
+    out.clear();
     for(int i=0;i<tmp.size(); i++) out.push_back(tmp[i]/tot_sum);
-    
 }
 
 void CNN::fully_connected(){
-    // Temporary fix to make the penultimate_output as vector of vectors
-    matrix pen = matrix(1, vector<double>(penultimate_output.size()));
-    pen[0] = penultimate_output;
+    // Temporary fix to make the conv_out_flat as vector of vectors
+    matrix pen = matrix(1, vector<double>(conv_out_flat.size()));
+    pen[0] = conv_out_flat;
     matrix tmp = multiply(pen, weights);
     for(int i=0;i<tmp.size();i++){
         vector<double> c = vector_addition(tmp[i], bias);
         tmp[i] = c;
     }
-    print_matrix(tmp);
     // Again the whole matrix thingy is converted back to whatever
     softmax_inp = tmp[0];
     softmax();
@@ -251,30 +269,27 @@ void CNN::fwd_prop(matrix input_img){
 
     // flattening the output from max pool
     flatten(conv_output);
-    init_weights();
-    init_biases();
 
     fully_connected();
-    print_vector(out);
 }
 
-matrix CNN::softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label){
+matrix CNN::softmax_backprop(int label){
     vector<double> d_L_d_out = vector<double>(out.size(), 0);
-    vector<double> t_exp = vector<double>(out.size());
+    vector<double> t_exp = vector<double>(softmax_inp.size());
     vector<double> d_out_d_t = vector<double>(out.size());
     vector<double> d_L_d_t = vector<double>(out.size());
     vector<double> d_L_d_b = vector<double>(out.size());
-    vector<double> d_t_d_w = vector<double>(in_flat.size());
-    vector<double> d_L_d_inputs_flat = vector<double>(in_flat.size());
-    matrix d_L_d_inputs = matrix(in.size(), vector<double>(in[0].size()));
-    matrix d_L_d_w = matrix(in_flat.size(), vector<double>(out.size()));
+    vector<double> d_t_d_w = vector<double>(conv_out_flat.size());
+    vector<double> d_L_d_inputs_flat = vector<double>(conv_out_flat.size());
+    matrix d_L_d_inputs = matrix(conv_output.size(), vector<double>(conv_output[0].size()));
+    matrix d_L_d_w = matrix(conv_out_flat.size(), vector<double>(out.size()));
     float d_t_d_b = 1;
     float sum;
 
     d_L_d_out[label] = -1 / out[label];
 
-    for (auto i = 0; i < out.size(); i++)
-        t_exp[i] = exp(out[i]);
+    for (auto i = 0; i < softmax_inp.size(); i++)
+        t_exp[i] = exp(softmax_inp[i]);
     
     for_each(t_exp.begin(), t_exp.end(), [&] (float n) {
         sum += n;
@@ -284,8 +299,8 @@ matrix CNN::softmax_backprop(matrix in, vector<double> in_flat, vector<double> o
         d_out_d_t[i] = -t_exp[label] * t_exp[i] / pow(sum, 2);
     d_out_d_t[label] = t_exp[label] * (sum - t_exp[label]) / pow(sum, 2);
 
-    for (auto i = 0; i < in_flat.size(); i++)
-        d_t_d_w[i] = in_flat[i];
+    for (auto i = 0; i < conv_out_flat.size(); i++)
+        d_t_d_w[i] = conv_out_flat[i];
     
     for (auto i = 0; i < out.size(); i++)
         d_L_d_t[i] = d_L_d_out[label] * d_out_d_t[i];
@@ -308,6 +323,8 @@ matrix CNN::softmax_backprop(matrix in, vector<double> in_flat, vector<double> o
             idx++;
         }
     
+    print_matrix(weights);
+
     return d_L_d_inputs;
 }
 

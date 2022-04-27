@@ -24,6 +24,7 @@ matrix multiply(matrix &a, matrix &b)
 {
     const int n = a.size();     // a rows
     const int m = a[0].size();  // a cols
+    const int l = b.size();     // b rows
     const int p = b[0].size();  // b cols
     matrix c(n, vector<double>(p, 0));
 
