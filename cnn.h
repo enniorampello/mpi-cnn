@@ -11,6 +11,9 @@ using matrix = vector<vector<double>>;
 
 #define max(a,b) ((a)>(b)?(a):(b))
 
+random_device rd;
+mt19937 gen = mt19937(rd());
+normal_distribution<double> normal = normal_distribution<double>(0, 1); 
 
 class CNN {
     private:
@@ -35,8 +38,6 @@ class CNN {
         vector<double> conv_out_flat; // flatened output
         vector<double> softmax_inp;
         vector<double> out;
-
-        void init_normal_distribution();
 
         void init_filters();
         void init_biases();
@@ -259,7 +260,7 @@ void CNN::fwd_prop(matrix input_img){
     
     relu(conv_output);
     flatten(max_pool(conv_output));
-    
+
     fully_connected();
 }
 
