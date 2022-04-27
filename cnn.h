@@ -1,4 +1,3 @@
-#include <random>
 #include <numeric>
 #include <iostream>
 #include <vector>
@@ -22,6 +21,7 @@ class CNN {
         int n_nodes;
         int num_classes;
         double lr;
+        mt19937 gen;
 
         matrix image;
         vector<matrix> image_conv; // sample after convolution.
@@ -54,11 +54,10 @@ class CNN {
         void back_prop(); // update all the weights
 
     public:
-        random_device rd;
-        mt19937 gen;
+        
         normal_distribution<double> normal;
 
-        CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate);
+        CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate, mt19937 gen);
         void train(matrix sample); // call this for every sample
         
         matrix max_pool(matrix sample); // for a single image
@@ -84,7 +83,7 @@ int matrix_inner_product(matrix a, matrix b){
 }
 
 
-CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate){
+CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate, mt19937 gen){
     filter_size = fltr_sz;
     max_pool_size = max_pool_sz;
     n_filters = n_fltrs;
@@ -92,21 +91,19 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     n_nodes = num_nodes;
     lr = learning_rate;
     num_classes = 10;
+    gen = gen;
 
-    init_normal_distribution();
+    normal = normal_distribution<double>(0, 1); // (mean, std)
     init_filters();
     init_biases();
     init_weights();
 }
 
-void CNN::init_normal_distribution(){
-    gen = mt19937(rd());
-    normal = normal_distribution<double>(0, 1); // (mean, std)
-}
 
 void CNN::init_filters(){
     filters = vector<matrix>(n_filters, matrix(filter_size, vector<double>(filter_size)));
-    for (int i = 0; i < filters[0].size(); i++){
+    for (int i = 0; i < filters.size(); i++){
+
         for (int j = 0; j < filter_size; j++){
             for (int k = 0; k < filter_size; k++){
                 filters[i][j][k] = normal(gen); // sample from the normal distribution
@@ -116,7 +113,7 @@ void CNN::init_filters(){
 }
 
 void CNN::init_biases(){
-    bias = vector<double>(n_filters);
+    bias = vector<double>(num_classes);
     for (int i = 0; i < n_filters; i++){
         bias[i] = normal(gen);
     }
@@ -139,12 +136,11 @@ void CNN::init_biases(){
 // }
 
 void CNN::init_weights(){
-//     // init the matrix of weights for the fully connected layer
-//
-    weights = matrix(729, vector<double>(num_classes));
+    int size = 169;
+    weights = matrix(size, vector<double>(num_classes));
     for(int c=0;c<num_classes;c++){
-        for(int i=0;i<729;i++){
-                weights[i][c] = 0.01+0.1*c + i/10.0; 
+        for(int i=0;i<size;i++){
+                weights[i][c] = normal(gen); 
             }
     }
     
@@ -259,17 +255,11 @@ void CNN::fully_connected(){
 
 void CNN::fwd_prop(matrix input_img){
     // Convolution layer
-
-    init_filters();
     conv_output = convolution(input_img, filters[0]);
+    
     relu(conv_output);
-
-    // TODO: Fix max pool layer
-    // matrix tmp1 = max_pool(tmp);
-
-    // flattening the output from max pool
-    flatten(conv_output);
-
+    flatten(max_pool(conv_output));
+    
     fully_connected();
 }
 

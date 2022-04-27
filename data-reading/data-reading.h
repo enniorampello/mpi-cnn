@@ -22,12 +22,12 @@ int reverseInt (int i)
 
 void read_mnist_data(string path, vector<matrix> &vec, int n_images)
 {
-    cout<<"reading data from "<<path<<endl;
+    // cout<<"reading data from "<<path<<endl;
     ifstream file(path, ios::binary);
 
     if (file.is_open())
     {
-        cout<<"reading successful\n";
+        // cout<<"reading successful\n";
         int magic_number=0;
         int number_of_images = 0;
         int n_rows=0;
@@ -39,14 +39,14 @@ void read_mnist_data(string path, vector<matrix> &vec, int n_images)
         
         file.read((char*)&number_of_images,sizeof(number_of_images));
         number_of_images= reverseInt(number_of_images);
-        cout<<number_of_images<<endl;
+        // cout<<number_of_images<<endl;
 
         file.read((char*)&n_rows,sizeof(n_rows));
         n_rows= reverseInt(n_rows);
 
         file.read((char*)&n_cols,sizeof(n_cols));
         n_cols= reverseInt(n_cols);
-        cout<<n_rows<<" "<<n_cols<<endl;
+        // cout<<n_rows<<" "<<n_cols<<endl;
 
         if (n_images == 0)
             n_images = number_of_images;
@@ -73,12 +73,12 @@ void read_mnist_data(string path, vector<matrix> &vec, int n_images)
 }
 
 void read_mnist_labels(string path, vector<int> &labels, int n_labels){
-    cout<<"reading labels from "<<path<<endl;
+    // cout<<"reading labels from "<<path<<endl;
     ifstream file(path, ios::binary);
 
     if (file.is_open())
     {
-        cout<<"reading successful\n";
+        // cout<<"reading successful\n";
         int magic_number=0;
         int number_of_labels=0;
 
@@ -87,7 +87,7 @@ void read_mnist_labels(string path, vector<int> &labels, int n_labels){
 
         file.read((char*)&number_of_labels,sizeof(number_of_labels));
         number_of_labels = reverseInt(number_of_labels);
-        cout<<number_of_labels<<endl;
+        // cout<<number_of_labels<<endl;
 
         if (n_labels == 0)
             n_labels = number_of_labels;

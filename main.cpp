@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <random>
 #include "cnn.h"
 #include "data-reading/data-reading.h"
 
@@ -8,9 +9,15 @@ using matrix = vector<vector<double>>;
 
 
 int main(){
-    int filter_sze = 2;
+    int filter_sze = 3;
     int max_pool_sze = 2;
-    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.001);
+
+    random_device rd;
+    mt19937 gen;
+
+    gen = mt19937(rd());
+    
+    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.001, gen);
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
 
