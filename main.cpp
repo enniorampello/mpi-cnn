@@ -30,7 +30,7 @@ int main(){
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
     
-    model.softmax_backprop(vector<double>(4, 0), 2);
+
     
     return 0;
 }

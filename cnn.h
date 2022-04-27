@@ -4,7 +4,9 @@
 #include <vector>
 #include <functional>
 #include <algorithm>
+#include <math.h>
 #include "utils.h"
+
 using namespace std;
 using matrix = vector<vector<double>>;
 
@@ -56,7 +58,7 @@ class CNN {
         matrix max_pool(matrix sample); // for a single image
 
         // move the following functions to private after testing
-        vector<double> softmax_backprop(vector<double> out, int label);
+        vector<double> softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label);
 };
 
 
@@ -164,8 +166,34 @@ matrix CNN::max_pool(matrix sample){
 
 }
 
-vector<double> CNN::softmax_backprop(vector<double> out, int label){
-    vector<double> gradient = vector<double>(out.size(), 0);
-    cout << gradient;
+vector<double> CNN::softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label){
+    vector<double> d_L_d_out = vector<double>(out.size(), 0);
+    vector<double> t_exp = vector<double>(out.size());
+    vector<double> d_out_d_t = vector<double>(out.size());
+    vector<double> d_t_d_w = vector<double>(in_flat.size());
+    vector<double> d_L_d_inputs = vector<double>(in_flat.size());
+    matrix d_L_d_w = matrix(in_flat.size(), vector<double>(n_nodes));
+    float d_t_d_b = 1;
+    float sum;
+
+    d_L_d_out[label] = -1 / out[label];
+
+    for (int i = 0; i < out.size(); i++)
+        t_exp[i] = exp(out[i]);
+    
+    for_each(t_exp.begin(), t_exp.end(), [&] (float n) {
+        sum += n;
+    });
+
+    // d_out_d_t = -t_exp[label] * t_exp / (S ** 2)
+    for (int i = 0; i < out.size(); i++)
+        d_out_d_t[i] = -t_exp[label] * t_exp[i] / pow(sum, 2);
+    
+    d_out_d_t[label] = t_exp[label] * (sum - t_exp[label]) / pow(sum, 2);
+
+    
+    
+
+
     return gradient;
 }
