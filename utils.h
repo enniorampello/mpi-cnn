@@ -15,8 +15,9 @@ void print_matrix(matrix sample){
 
 void print_vector(vector<double> sample){
     for (int i = 0; i < sample.size(); i++){
-            cout << sample[i] <<endl;
+            cout << sample[i] <<" ";
     }
+    cout<<endl;
 }
 
 matrix multiply(matrix &a, matrix &b)
@@ -24,8 +25,8 @@ matrix multiply(matrix &a, matrix &b)
     const int n = a.size();     // a rows
     const int m = a[0].size();  // a cols
     const int p = b[0].size();  // b cols
-    
     matrix c(n, vector<double>(p, 0));
+
     for (auto j = 0; j < p; ++j){
         for (auto k = 0; k < m; ++k){
             for (auto i = 0; i < n; ++i){
@@ -81,4 +82,5 @@ double multiply(matrix a, matrix b, int flag){
         result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
     }
     return result;
+
 }
