@@ -58,9 +58,10 @@ void read_mnist_data(string path, vector<matrix> &vec, int n_images)
             {
                 for(int c = 0; c < n_cols; ++c)
                 {
+                    // cout<<c<<" ";
                     unsigned char temp=0;
                     file.read((char*)&temp,sizeof(temp));
-                    img[r].push_back(temp / 255.0);
+                    img[r][c] = temp / 255.0;
 
                 }
             }
