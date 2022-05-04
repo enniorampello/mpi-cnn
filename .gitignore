@@ -32,3 +32,5 @@ main.dSYM
 *.exe
 *.out
 *.app
+
+main
