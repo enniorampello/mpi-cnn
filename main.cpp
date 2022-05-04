@@ -33,7 +33,8 @@ int main(){
 
 
     for (auto epoch = 0; epoch < NUM_EPOCHS; epoch++){
-        double tmp = 0;
+        double loss = 0;
+        double acc = 0;
         cout<<"running epoch "<<epoch+1<<endl;
         for (auto i = 0; i < images.size(); i++){
             image = images[i];
@@ -42,10 +43,21 @@ int main(){
             model.fwd_prop(image);
             model.back_prop(label);
 
-            tmp += model.cross_entropy_loss();
+            loss += model.cross_entropy_loss();
         }   
-        tmp /= images.size();
-        cout<<"Epoch: "<<epoch+1<<", Loss: "<<tmp<<endl;
+        loss /= images.size();
+
+        //computing accuracy
+        for (auto i = 0; i < images.size();i++){
+            image = images[i];
+            label = labels[i];
+
+            model.fwd_prop(image);
+            int tmp = model.check_label(label);
+            acc += tmp;
+        }
+        acc /= images.size();
+        cout<<"Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
     }
     
 

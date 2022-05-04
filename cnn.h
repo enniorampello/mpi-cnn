@@ -50,6 +50,8 @@ class CNN {
         void fully_connected(); // for the fully connected layer
         void softmax();
 
+        
+
     public:
         normal_distribution<double> normal;
 
@@ -67,6 +69,7 @@ class CNN {
 
         double cross_entropy_loss();
         void print_img();
+        int check_label(int label); //checking if labels and predicted softmax match
 };
 
 
@@ -123,6 +126,16 @@ void CNN::init_weights(){
                 weights[i][c] = normal(gen); 
             }
     }
+}
+
+int CNN::check_label(int label){
+    int maxElementIndex = max_element(out_prob.begin(),out_prob.end()) - out_prob.begin();
+    // int maxElement = *max_element(out_prob.begin(), out_prob.end());
+
+    if(label == maxElementIndex)
+        return 1;
+    else
+        return 0;
 }
 
 matrix CNN::convolution(matrix img){
