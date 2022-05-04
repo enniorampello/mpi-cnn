@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <random>
 #include "cnn.h"
 #include "data-reading/data-reading.h"
 
@@ -27,8 +28,8 @@ int main(){
     matrix image;
     int label;
 
-    read_mnist_data("data-reading/train-images.idx3-ubyte", images, 1);
-    read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 1);
+    read_mnist_data("data-reading/train-images.idx3-ubyte", images, 500);
+    read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 500);
 
 
 
