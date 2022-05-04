@@ -137,8 +137,8 @@ matrix CNN::convolution(matrix img){
             matrix tmp = matrix(filter_size, vector<double>(filter_size));
             // cout<<"Vishal asked for this "<<img[i][j]<<endl;
             for(int k=0;k<filter_size;k++){
-            vector<double>::const_iterator first = image[i+k].begin() + j;
-            vector<double>::const_iterator last = image[i+k].begin() + j +  filter_size;
+            vector<double>::const_iterator first = img[i+k].begin() + j;
+            vector<double>::const_iterator last = img[i+k].begin() + j +  filter_size;
             vector<double> newVec(first, last);
             tmp[k] = newVec;
             }
