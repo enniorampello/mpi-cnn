@@ -62,8 +62,8 @@ class CNN {
         void fwd_prop(matrix input_img);
         void back_prop(int label); // update all the weights
 
-        matrix convolution_backprop(matrix last_input, matrix d_L_d_out);
-        matrix max_pool_backprop(matrix last_input, matrix d_L_d_out);
+        matrix convolution_backprop(matrix d_L_d_out);
+        matrix max_pool_backprop(matrix d_L_d_out);
         matrix softmax_backprop();
 
         double cross_entropy_loss();
@@ -285,11 +285,11 @@ matrix CNN::softmax_backprop(){
 
 // last_input is probably conv_output 
 // consider dropping the parameter and writing: matrix last_input = conv_output \e
-matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
+matrix CNN::max_pool_backprop(matrix d_L_d_out){
     //TODO: ask danny if the "last input" is the "conv input" or something else
-    matrix d_L_d_input = matrix(last_input.size(), vector<double>(last_input[0].size())); 
+    matrix d_L_d_input = matrix(conv_output.size(), vector<double>(conv_output[0].size())); 
 
-    int s = last_input.size()/max_pool_size;
+    int s = conv_output.size()/max_pool_size;
 
     int max_val = -1;
     int max_k = 0;
@@ -304,7 +304,7 @@ matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
             {
                 for (size_t l = 0; l < max_pool_size; l++)
                 {
-                    float val = last_input[i*max_pool_size + k][j*max_pool_size + l];
+                    float val = conv_output[i*max_pool_size + k][j*max_pool_size + l];
                     if(max_val < val){
                         max_val = val;
                         max_k = k;
@@ -319,11 +319,11 @@ matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
 }
 
 // last_input should be the sample itself no? maybe can drop the parameter \e
-matrix CNN::convolution_backprop(matrix last_input, matrix d_L_d_out){
+matrix CNN::convolution_backprop(matrix d_L_d_out){
     //assuming filters are only 1
     matrix d_L_d_filters = matrix(filter_size, vector<double>(filter_size)); 
 
-    int output_size =  (1 + last_input.size() - filter_size)/stride;
+    int output_size =  (1 + image.size() - filter_size)/stride;
     // matrix output = matrix(output_size, vector<double>(output_size));
 
     
@@ -333,8 +333,8 @@ matrix CNN::convolution_backprop(matrix last_input, matrix d_L_d_out){
             matrix tmp = matrix(filter_size, vector<double>(filter_size));
             
             for(int k=0;k<filter_size;k++){
-            vector<double>::const_iterator first = last_input[i+k].begin() + j;
-            vector<double>::const_iterator last = last_input[i+k].begin() + j +  filter_size;
+            vector<double>::const_iterator first = image[i+k].begin() + j;
+            vector<double>::const_iterator last = image[i+k].begin() + j +  filter_size;
             vector<double> newVec(first, last);
             tmp[k] = newVec;
             }
