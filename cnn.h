@@ -224,8 +224,8 @@ void CNN::fwd_prop(matrix input_img){
 void CNN::back_prop(int lbl){
     label = lbl;
     matrix d_L_d_out_maxpool = softmax_backprop();
-    // matrix d_L_d_out_conv = max_pool_backprop(d_L_d_out_maxpool);
-    // convolution_backprop(d_L_d_out_conv);
+    matrix d_L_d_out_conv = max_pool_backprop(d_L_d_out_maxpool);
+    convolution_backprop(d_L_d_out_conv);
 }
 
 matrix CNN::softmax_backprop(){
@@ -278,7 +278,7 @@ matrix CNN::softmax_backprop(){
             idx++;
         }
     
-    print_matrix(weights);
+    // print_matrix(weights);
 
     return d_L_d_inputs;
 }
