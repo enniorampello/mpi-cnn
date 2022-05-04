@@ -27,6 +27,7 @@ class CNN {
         mt19937 gen;
 
         matrix image;
+        int label;
         vector<matrix> image_conv; // sample after convolution.
         vector<matrix> image_pool; // sample after max_pool
         
@@ -52,10 +53,7 @@ class CNN {
         void fully_connected(); // for the fully connected layer
         void softmax();
 
-        void back_prop(); // update all the weights
-
     public:
-        
         normal_distribution<double> normal;
 
         CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate, mt19937 gen);
@@ -64,24 +62,14 @@ class CNN {
         matrix max_pool(matrix sample); // for a single image
 
         void fwd_prop(matrix input_img);
-        
-        // move the following functions to private after testing
-        matrix softmax_backprop(matrix in, vector<double> in_flat, vector<double> out, vector<double> out_softmax, int label);
-
-        matrix max_pool_backprop(matrix last_input, matrix d_L_d_out);
+        void back_prop(int label); // update all the weights
 
         matrix convolution_backprop(matrix last_input, matrix d_L_d_out);
-        matrix softmax_backprop(int label);
+        matrix max_pool_backprop(matrix last_input, matrix d_L_d_out);
+        matrix softmax_backprop();
+
+        double cross_entropy_loss();
 };
-
-
-int matrix_inner_product(matrix a, matrix b){
-    double result = 0.0;
-    for(int i=0; i<a.size();i++){
-        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
-    }
-    return result;
-}
 
 
 CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate, mt19937 gen){
@@ -100,6 +88,15 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     init_weights();
 }
 
+double CNN::cross_entropy_loss(){
+    vector<int> label_vec(10, 0);
+    float loss = 0;
+    label_vec[label] = 1;
+
+    for(auto i = 0; i < 10; i++)
+        loss -= label_vec[i]*log(out[i]);
+    return loss;
+}
 
 void CNN::init_filters(){
     filters = vector<matrix>(n_filters, matrix(filter_size, vector<double>(filter_size)));
@@ -120,22 +117,6 @@ void CNN::init_biases(){
     }
 }
 
-// void CNN::init_filters(){
-//     filters.push_back(matrix(filter_size, vector<double>(filter_size)));
-//     filters[0][0][0] = 1;
-//     filters[0][0][1] = -1;
-
-//     filters[0][1][0] = -1;
-//     filters[0][1][1] = -1;
-//}
-
-
-//     bias = vector<double>(n_filters);
-//     for (int i = 0; i < n_filters; i++){
-//         bias[i] = normal(gen);
-//     }
-// }
-
 void CNN::init_weights(){
     int size = 169;
     weights = matrix(size, vector<double>(num_classes));
@@ -144,21 +125,7 @@ void CNN::init_weights(){
                 weights[i][c] = normal(gen); 
             }
     }
-    
-    
 }
-
-// void CNN::init_biases(){
-// //     // init the matrix of weights for the fully connected layer
-// //
-
-//     for(int i=0;i<num_classes;i++){
-//         bias.push_back(0.15 * i/10.0) ; 
-//     }
-    
-
-// }
-
 
 matrix CNN::convolution(matrix sample, matrix filter){
     // output size = [(W−K+2P)/S]+1
@@ -184,9 +151,7 @@ matrix CNN::convolution(matrix sample, matrix filter){
     return output;
 }
 
-
 void CNN::relu(matrix &sample){
-    
     for_each(
         sample.begin(), 
         sample.end(),
@@ -194,8 +159,6 @@ void CNN::relu(matrix &sample){
             replace_if(tmp.begin(), tmp.end(), [](double &i){return i<0.0;}, 0.0);
             });
 }
-
-
 
 matrix CNN::max_pool(matrix sample){
     int s = sample.size()/max_pool_size;
@@ -216,16 +179,13 @@ matrix CNN::max_pool(matrix sample){
     }
 
     return out; 
-
 }
-
 
 void CNN::flatten(matrix tmp){
     conv_out_flat.clear();
     for(auto && v : tmp){
         conv_out_flat.insert(conv_out_flat.end(), v.begin(), v.end());
     }
-
 }
 
 void CNN::softmax(){
@@ -251,7 +211,6 @@ void CNN::fully_connected(){
     // Again the whole matrix thingy is converted back to whatever
     softmax_inp = tmp[0];
     softmax();
-
 }
 
 void CNN::fwd_prop(matrix input_img){
@@ -264,7 +223,14 @@ void CNN::fwd_prop(matrix input_img){
     fully_connected();
 }
 
-matrix CNN::softmax_backprop(int label){
+void CNN::back_prop(int lbl){
+    label = lbl;
+    matrix d_L_d_out_maxpool = softmax_backprop();
+    // matrix d_L_d_out_conv = max_pool_backprop(d_L_d_out_maxpool);
+    // convolution_backprop(d_L_d_out_conv);
+}
+
+matrix CNN::softmax_backprop(){
     vector<double> d_L_d_out = vector<double>(out.size(), 0);
     vector<double> t_exp = vector<double>(softmax_inp.size());
     vector<double> d_out_d_t = vector<double>(out.size());
@@ -319,11 +285,12 @@ matrix CNN::softmax_backprop(int label){
     return d_L_d_inputs;
 }
 
-
+// last_input is probably conv_output 
+// consider dropping the parameter and writing: matrix last_input = conv_output \e
 matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
     //TODO: ask danny if the "last input" is the "conv input" or something else
     matrix d_L_d_input = matrix(last_input.size(), vector<double>(last_input[0].size())); 
-    
+
     int s = last_input.size()/max_pool_size;
 
     int max_val = -1;
@@ -335,7 +302,6 @@ matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
     {
         for (size_t j = 0; j < s; j++)
         {
-
             for (size_t k = 0; k < max_pool_size; k++)
             {
                 for (size_t l = 0; l < max_pool_size; l++)
@@ -345,49 +311,17 @@ matrix CNN::max_pool_backprop(matrix last_input, matrix d_L_d_out){
                         max_val = val;
                         max_k = k;
                         max_l = l;
-                    }
-                    
-                          
+                    }       
                 }   
             }
             d_L_d_input[i*max_pool_size + max_k][i*max_pool_size + max_l] = d_L_d_out[i][j];
         }
     }
-
     return d_L_d_input; 
 }
-matrix multiply_scalar_matrix(double val, matrix tmp){
-    //function to multiply a scalar and a matrix
 
-
-    for (size_t i = 0; i < tmp.size(); i++)
-    {
-        for (size_t j = 0; j < tmp[0].size(); j++)
-        {
-            tmp[i][j] *= val;
-        }
-        
-    }
-    return tmp;
-}
-
-matrix sum_matrices(matrix a, matrix b){
-    //element wise addition of 2 matrices
-
-    for (size_t i = 0; i < a.size(); i++)
-    {
-        for (size_t j = 0; j < a[0].size(); j++)
-        {
-            a[i][j] += b[i][j];
-        }
-        
-    }
-    return a;
-    
-}
-
+// last_input should be the sample itself no? maybe can drop the parameter \e
 matrix CNN::convolution_backprop(matrix last_input, matrix d_L_d_out){
-
     //assuming filters are only 1
     matrix d_L_d_filters = matrix(filter_size, vector<double>(filter_size)); 
 
@@ -414,6 +348,4 @@ matrix CNN::convolution_backprop(matrix last_input, matrix d_L_d_out){
 
     filters[0] = sum_matrices(filters[0], multiply_scalar_matrix(-1*lr, d_L_d_filters));
     return filters[0];
-
 }
-

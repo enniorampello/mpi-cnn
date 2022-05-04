@@ -35,7 +35,7 @@ int main(){
         label = labels[i];
 
         model.fwd_prop(image);
-        model.softmax_backprop(label);
+        model.back_prop(label);
     }
 
     return 0;
