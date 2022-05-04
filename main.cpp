@@ -17,7 +17,7 @@ int main(){
 
     gen = mt19937(rd());
     
-    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.1, gen);
+    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.01, gen);
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
 
@@ -34,7 +34,7 @@ int main(){
 
     for (auto epoch = 0; epoch < NUM_EPOCHS; epoch++){
         double tmp = 0;
-        cout<<"running epoch "<<epoch<<endl;
+        cout<<"running epoch "<<epoch+1<<endl;
         for (auto i = 0; i < images.size(); i++){
             image = images[i];
             label = labels[i];
@@ -45,7 +45,7 @@ int main(){
             tmp += model.cross_entropy_loss();
         }   
         tmp /= images.size();
-        cout<<"Epoch: "<<epoch<<" ,Loss: "<<tmp<<endl;
+        cout<<"Epoch: "<<epoch+1<<", Loss: "<<tmp<<endl;
     }
     
 
