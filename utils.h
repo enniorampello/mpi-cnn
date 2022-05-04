@@ -114,6 +114,13 @@ matrix multiply(vector<double> &a, vector<double> &b){
     return c;
 }
 
+void print_positive(vector<double> &sample){
+    for (int i = 0; i < sample.size(); i++){
+        if(sample[i]>0)
+            cout << sample[i] <<" ";
+    }
+}
+
 // the purpose of the flag here is to be able to overload the function to return a double
 double multiply(matrix a, matrix b, int flag){
     double result = 0.0;

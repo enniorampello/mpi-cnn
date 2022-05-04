@@ -46,7 +46,7 @@ void read_mnist_data(string path, vector<matrix> &vec, int n_images)
 
         file.read((char*)&n_cols,sizeof(n_cols));
         n_cols= reverseInt(n_cols);
-        // cout<<n_rows<<" "<<n_cols<<endl;
+        cout<<n_rows<<" "<<n_cols<<endl;
 
         if (n_images == 0)
             n_images = number_of_images;
@@ -60,7 +60,7 @@ void read_mnist_data(string path, vector<matrix> &vec, int n_images)
                 {
                     unsigned char temp=0;
                     file.read((char*)&temp,sizeof(temp));
-                    img[r].push_back(temp / 255.0);
+                    img[r][c] = temp / 255.0;
 
                 }
             }
