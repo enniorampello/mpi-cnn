@@ -4,7 +4,7 @@
 #include "cnn.h"
 #include "data-reading/data-reading.h"
 
-#define NUM_EPOCHS 10
+#define NUM_EPOCHS 20
 using namespace std;
 using matrix = vector<vector<double>>;
 
@@ -28,8 +28,8 @@ int main(){
     matrix image;
     int label;
 
-    read_mnist_data("data-reading/train-images.idx3-ubyte", images, 500);
-    read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 500);
+    read_mnist_data("data-reading/train-images.idx3-ubyte", images, 1000);
+    read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 1000);
 
 
 
@@ -46,7 +46,7 @@ int main(){
             tmp += model.cross_entropy_loss();
         }   
         tmp /= images.size();
-        cout<<"Epoch: "<<epoch<<", Loss: "<<tmp<<endl;
+        cout<<"Epoch: "<<epoch<<" ,Loss: "<<tmp<<endl;
     }
     
 
