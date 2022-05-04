@@ -20,6 +20,44 @@ void print_vector(vector<double> sample){
     cout<<endl;
 }
 
+int matrix_inner_product(matrix a, matrix b){
+    double result = 0.0;
+    for(int i=0; i<a.size();i++){
+        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
+    }
+    return result;
+}
+
+matrix sum_matrices(matrix a, matrix b){
+    //element wise addition of 2 matrices
+
+    for (size_t i = 0; i < a.size(); i++)
+    {
+        for (size_t j = 0; j < a[0].size(); j++)
+        {
+            a[i][j] += b[i][j];
+        }
+        
+    }
+    return a;
+    
+}
+
+matrix multiply_scalar_matrix(double val, matrix tmp){
+    //function to multiply a scalar and a matrix
+
+
+    for (size_t i = 0; i < tmp.size(); i++)
+    {
+        for (size_t j = 0; j < tmp[0].size(); j++)
+        {
+            tmp[i][j] *= val;
+        }
+        
+    }
+    return tmp;
+}
+
 matrix multiply(matrix &a, matrix &b)
 {
     const int n = a.size();     // a rows
