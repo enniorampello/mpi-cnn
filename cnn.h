@@ -11,8 +11,6 @@ using matrix = vector<vector<double>>;
 
 #define max(a,b) ((a)>(b)?(a):(b))
 
-random_device rd;
-mt19937 gen = mt19937(rd());
 normal_distribution<double> normal = normal_distribution<double>(0, 1); 
 
 class CNN {
