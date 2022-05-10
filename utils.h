@@ -20,10 +20,10 @@ void print_vector(vector<double> sample){
     cout<<endl;
 }
 
-int matrix_inner_product(matrix a, matrix b){
+double matrix_inner_product(matrix a, matrix b){
     double result = 0.0;
     for(int i=0; i<a.size();i++){
-        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
+        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0.0);   
     }
     return result;
 }

@@ -17,7 +17,7 @@ int main(){
 
     gen = mt19937(rd());
     
-    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.01, gen);
+    CNN model = CNN(filter_sze, max_pool_sze, 2, 1, 16, 0.01, gen);
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
 
@@ -39,15 +39,16 @@ int main(){
         for (auto i = 0; i < images.size(); i++){
             image = images[i];
             label = labels[i];
-            print_matrix(subtract_matrices(images[i], images[i+1]));
-            model.fwd_prop(image);
+            // print_matrix(subtract_matrices(images[i], images[i+1]));
+            
+            model.fwd_prop(image);            
             model.back_prop(label);
 
             loss += model.cross_entropy_loss();
         }   
         loss /= images.size();
 
-        //computing accuracy
+        // computing accuracy
         for (auto i = 0; i < images.size();i++){
             image = images[i];
             label = labels[i];
