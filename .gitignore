@@ -2,7 +2,8 @@
 main.dSYM
 # Prerequisites
 *.d
-
+boost_1_79_0
+b2
 # Compiled Object files
 *.slo
 *.lo

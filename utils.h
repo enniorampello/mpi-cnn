@@ -4,6 +4,16 @@
 using namespace std;
 using matrix = vector<vector<double>>;
 
+void print_mnist(matrix sample){
+    for (int i = 0; i < sample.size(); i++){
+        for (int j = 0; j < sample[i].size(); j++){
+            if (sample[i][j] > 0) cout << 1 << " ";
+            else cout << 0 << " ";
+        }
+        cout<<endl;
+    }
+}
+
 void print_matrix(matrix sample){
     for (int i = 0; i < sample.size(); i++){
         for (int j = 0; j < sample[i].size(); j++){
