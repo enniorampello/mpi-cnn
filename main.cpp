@@ -58,6 +58,7 @@ int main(int argc, char *argv[]){
 
             loss += model.cross_entropy_loss();
         }   
+        
         loss /= images.size();
 
         // computing accuracy
