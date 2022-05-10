@@ -4,6 +4,16 @@
 using namespace std;
 using matrix = vector<vector<double>>;
 
+void print_mnist(matrix sample){
+    for (int i = 0; i < sample.size(); i++){
+        for (int j = 0; j < sample[i].size(); j++){
+            if (sample[i][j] > 0) cout << 1 << " ";
+            else cout << 0 << " ";
+        }
+        cout<<endl;
+    }
+}
+
 void print_matrix(matrix sample){
     for (int i = 0; i < sample.size(); i++){
         for (int j = 0; j < sample[i].size(); j++){
@@ -20,10 +30,10 @@ void print_vector(vector<double> sample){
     cout<<endl;
 }
 
-int matrix_inner_product(matrix a, matrix b){
+double matrix_inner_product(matrix a, matrix b){
     double result = 0.0;
     for(int i=0; i<a.size();i++){
-        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0);   
+        result += inner_product(a[i].begin(), a[i].end(), b[i].begin(), 0.0);   
     }
     return result;
 }
