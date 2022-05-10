@@ -39,7 +39,7 @@ int main(){
         for (auto i = 0; i < images.size(); i++){
             image = images[i];
             label = labels[i];
-
+            print_matrix(subtract_matrices(images[i], images[i+1]));
             model.fwd_prop(image);
             model.back_prop(label);
 

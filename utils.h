@@ -43,6 +43,22 @@ matrix sum_matrices(matrix a, matrix b){
     
 }
 
+matrix subtract_matrices(matrix a, matrix b){
+    //element wise addition of 2 matrices
+
+    for (size_t i = 0; i < a.size(); i++)
+    {
+        for (size_t j = 0; j < a[0].size(); j++)
+        {
+            a[i][j] -= b[i][j];
+        }
+        
+    }
+    return a;
+    
+}
+
+
 matrix multiply_scalar_matrix(double val, matrix tmp){
     //function to multiply a scalar and a matrix
 

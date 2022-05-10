@@ -247,9 +247,8 @@ matrix CNN::softmax_backprop(){
     for (auto i = 0; i < softmax_inp.size(); i++)
         t_exp[i] = exp(softmax_inp[i]);
     
-    for_each(t_exp.begin(), t_exp.end(), [&] (float n) {
-        sum += n;
-    });
+    for (auto i = 0; i < t_exp.size(); i++)
+        sum += t_exp[i];
 
     for (auto i = 0; i < out_prob.size(); i++)
         d_out_d_t[i] = -t_exp[label] * t_exp[i] / pow(sum, 2);
@@ -265,6 +264,8 @@ matrix CNN::softmax_backprop(){
     d_L_d_w = multiply(d_t_d_w, d_L_d_t);
     d_L_d_b = d_L_d_t;
     d_L_d_inputs_flat = multiply(d_L_d_t, weights);
+
+
 
     for (auto i = 0; i < weights.size(); i++)
         for (auto j = 0; j < weights[0].size(); j++)
