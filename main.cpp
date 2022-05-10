@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
         }   
         loss /= images.size();
 
-        //computing accuracy
+        // computing accuracy
         for (auto i = 0; i < images.size();i++){
             image = images[i];
             label = labels[i];
