@@ -150,7 +150,6 @@ vector<matrix> CNN::convolution(matrix img){
         for(auto i =0; i<output_size; i++){
         for(auto j=0; j<output_size;j++){
             matrix tmp = matrix(filter_size, vector<double>(filter_size));
-            // cout<<"Vishal asked for this "<<img[i][j]<<endl;
             for(int k=0;k<filter_size;k++){
             vector<double>::const_iterator first = img[i+k].begin() + j;
             vector<double>::const_iterator last = img[i+k].begin() + j +  filter_size;
@@ -243,7 +242,6 @@ void CNN::fwd_prop(matrix input_img){
 void CNN::back_prop(int lbl){
     label = lbl;
     vector<matrix> d_L_d_out_maxpool = softmax_backprop();
-    
     vector<matrix> d_L_d_out_conv = max_pool_backprop(d_L_d_out_maxpool);
     convolution_backprop(d_L_d_out_conv);
 }
@@ -281,15 +279,11 @@ vector<matrix> CNN::softmax_backprop(){
     
     for (auto i = 0; i < out_prob.size(); i++)
         d_L_d_t[i] = d_L_d_out[label] * d_out_d_t[i];
-    
-    cout<<d_t_d_w.size()<<" "<<d_L_d_t.size()<<endl;
 
     // d_L_d_w = d_t_d_w[np.newaxis].T @ d_L_d_t[np.newaxis]
     d_L_d_w = multiply(d_t_d_w, d_L_d_t);
-    d_L_d_b = d_L_d_t;
+    d_L_d_b = d_L_d_t;    
     d_L_d_inputs_flat = multiply(d_L_d_t, weights);
-
-    
 
     for (auto i = 0; i < weights.size(); i++)
         for (auto j = 0; j < weights[0].size(); j++)
@@ -313,10 +307,10 @@ vector<matrix> CNN::softmax_backprop(){
 // last_input is probably conv_output 
 // consider dropping the parameter and writing: matrix last_input = conv_output \e
 vector<matrix> CNN::max_pool_backprop(vector<matrix> d_L_d_out){
-    //TODO: ask danny if the "last input" is the "conv input" or something else
-    vector<matrix> d_L_d_input = vector<matrix>(n_filters,matrix(conv_output.size(), vector<double>(conv_output[0].size()))); 
 
-    int s = conv_output.size()/max_pool_size;
+    vector<matrix> d_L_d_input = vector<matrix>(n_filters,matrix(conv_output[0].size(), vector<double>(conv_output[0][0].size()))); 
+
+    int s = conv_output[0].size()/max_pool_size;
 
     int max_val = -1;
     int max_k = 0;
@@ -349,7 +343,6 @@ vector<matrix> CNN::max_pool_backprop(vector<matrix> d_L_d_out){
 
 // last_input should be the sample itself no? maybe can drop the parameter \e
 vector<matrix> CNN::convolution_backprop(vector<matrix> d_L_d_out){
-    //assuming filters are only 1
     vector<matrix> d_L_d_filters = vector<matrix>(n_filters,matrix(filter_size, vector<double>(filter_size))); 
 
     int output_size =  (1 + image.size() - filter_size)/stride;
@@ -367,7 +360,6 @@ vector<matrix> CNN::convolution_backprop(vector<matrix> d_L_d_out){
             vector<double> newVec(first, last);
             tmp[k] = newVec;
             }
-
 
             d_L_d_filters[filter_num] = sum_matrices(d_L_d_filters[filter_num], multiply_scalar_matrix(d_L_d_out[filter_num][i][j], tmp));
         }

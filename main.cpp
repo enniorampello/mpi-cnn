@@ -17,7 +17,7 @@ int main(){
 
     gen = mt19937(rd());
     
-    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.01, gen);
+    CNN model = CNN(filter_sze, max_pool_sze, 2, 1, 16, 0.01, gen);
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
 
@@ -48,16 +48,16 @@ int main(){
         }   
         loss /= images.size();
 
-        //computing accuracy
-        // for (auto i = 0; i < images.size();i++){
-        //     image = images[i];
-        //     label = labels[i];
+        // computing accuracy
+        for (auto i = 0; i < images.size();i++){
+            image = images[i];
+            label = labels[i];
 
-        //     model.fwd_prop(image);
-        //     int tmp = model.check_label(label);
-        //     acc += tmp;
-        // }
-        // acc /= images.size();
+            model.fwd_prop(image);
+            int tmp = model.check_label(label);
+            acc += tmp;
+        }
+        acc /= images.size();
         cout<<"Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
     }
     
