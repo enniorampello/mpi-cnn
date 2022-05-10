@@ -7,7 +7,7 @@
 
 #define NUM_PROCESSORS 4 // THIS NUMBER MUST MATCH THE ONE GIVEN IN THE COMMAND LINE
 #define NUM_EPOCHS 20
-#define NUM_IMAGES 500
+#define NUM_IMAGES 1000
 
 using namespace std;
 using matrix = vector<vector<double>>;
@@ -28,26 +28,22 @@ int main(int argc, char *argv[]){
     matrix image;
     int label;
 
-    // rc = MPI_Init(&argc, &argv);
-    // rc = MPI_Comm_rank(MPI_COMM_WORLD, &p);
-    // rc = MPI_Comm_size(MPI_COMM_WORLD, &P);
+    rc = MPI_Init(&argc, &argv);
+    rc = MPI_Comm_rank(MPI_COMM_WORLD, &p);
+    rc = MPI_Comm_size(MPI_COMM_WORLD, &P);
 
-    // if (p == 0){
-    //     printf("number of processes: %d\n", P);
-    //     printf("number of images: %d\n", NUM_IMAGES);
+    if (p == 0){
+        printf("number of processes: %d\n", P);
+        printf("number of images: %d\n", NUM_IMAGES);
          read_mnist_data("data-reading/train-images.idx3-ubyte", images, NUM_IMAGES);
          read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, NUM_IMAGES);
-    // }
-    // distribute_data(images, labels, p);
+    }
+    distribute_data(images, labels, p);
     
-    // printf("\tI am process %d\n", p);
-    
-    // MPI_Finalize();
-    // return 0;
-
+    printf("\tI am process %d\n", p);
 
     gen = mt19937(rd());
-    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 32, 0.01, gen);
+    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.005, gen);
 
     for (auto epoch = 0; epoch < NUM_EPOCHS; epoch++){
         double loss = 0;
@@ -56,7 +52,7 @@ int main(int argc, char *argv[]){
         for (auto i = 0; i < images.size(); i++){
             image = images[i];
             label = labels[i];
-            // print_matrix(subtract_matrices(images[i], images[i+1]));
+
             model.fwd_prop(image);
             model.back_prop(label);
 
@@ -74,10 +70,11 @@ int main(int argc, char *argv[]){
             acc += tmp;
         }
         acc /= images.size();
-        cout<<"Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
+        cout<<"Process: "<<p<<", Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
+        
     }
     
-
+    MPI_Finalize();
     return 0;
 }
 
