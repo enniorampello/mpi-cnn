@@ -3,6 +3,7 @@
 #include <vector>
 #include <functional>
 #include <algorithm>
+#include <random>
 #include <math.h>
 #include "utils.h"
 
@@ -10,8 +11,6 @@ using namespace std;
 using matrix = vector<vector<double>>;
 
 #define max(a,b) ((a)>(b)?(a):(b))
-
-normal_distribution<double> normal = normal_distribution<double>(0, 1); 
 
 class CNN {
     private:
@@ -44,12 +43,14 @@ class CNN {
 
         void load_image(matrix sample);
         
-        matrix convolution(); // for a single image
+        matrix convolution(matrix img); // for a single image
         void relu(matrix &sample);
 
         void flatten(matrix tmp); // TODO 
         void fully_connected(); // for the fully connected layer
         void softmax();
+
+        
 
     public:
         normal_distribution<double> normal;
@@ -67,6 +68,8 @@ class CNN {
         matrix softmax_backprop();
 
         double cross_entropy_loss();
+        void print_img();
+        int check_label(int label); //checking if labels and predicted softmax match
 };
 
 
@@ -125,24 +128,34 @@ void CNN::init_weights(){
     }
 }
 
-matrix CNN::convolution(){
-    // output size = [(W−K+2P)/S]+1
-    int output_size =  (1 + image.size() - filter_size)/stride;
-    matrix output = matrix(output_size, vector<double>(output_size));
-    
-    for(int i =0; i<output_size; i++){
-        for(int j=0; j<output_size;j++){
+int CNN::check_label(int label){
+    int maxElementIndex = max_element(out_prob.begin(),out_prob.end()) - out_prob.begin();
+    // int maxElement = *max_element(out_prob.begin(), out_prob.end());
 
+    if(label == maxElementIndex)
+        return 1;
+    else
+        return 0;
+}
+
+matrix CNN::convolution(matrix img){
+    // output size = [(W−K+2P)/S]+1
+    int output_size =  (1 + img.size() - filter_size)/stride;
+    matrix output = matrix(output_size, vector<double>(output_size));
+    // print_matrix(image);
+    // cout<< output_size<< " "<<img.size()<<" "<<img[0].size();
+
+    for(auto i =0; i<output_size; i++){
+        for(auto j=0; j<output_size;j++){
             matrix tmp = matrix(filter_size, vector<double>(filter_size));
-            
+            // cout<<"Vishal asked for this "<<img[i][j]<<endl;
             for(int k=0;k<filter_size;k++){
-            vector<double>::const_iterator first = image[i+k].begin() + j;
-            vector<double>::const_iterator last = image[i+k].begin() + j +  filter_size;
+            vector<double>::const_iterator first = img[i+k].begin() + j;
+            vector<double>::const_iterator last = img[i+k].begin() + j +  filter_size;
             vector<double> newVec(first, last);
             tmp[k] = newVec;
             }
-
-
+            // cout<<endl;
             output[i][j] = matrix_inner_product(filters[0], tmp);
         }
     }
@@ -214,7 +227,7 @@ void CNN::fully_connected(){
 void CNN::fwd_prop(matrix input_img){
     image = input_img;
     // Convolution layer
-    conv_output = convolution();
+    conv_output = convolution(input_img);
     
     relu(conv_output);
     flatten(max_pool(conv_output));
@@ -348,4 +361,8 @@ matrix CNN::convolution_backprop(matrix d_L_d_out){
 
     filters[0] = sum_matrices(filters[0], multiply_scalar_matrix(-1*lr, d_L_d_filters));
     return filters[0];
+}
+
+void CNN::print_img(){
+    print_matrix(image);
 }

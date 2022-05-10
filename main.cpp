@@ -1,6 +1,5 @@
 #include <vector>
 #include <iostream>
-#include <random>
 #include "cnn.h"
 #include "data-reading/data-reading.h"
 
@@ -18,7 +17,7 @@ int main(){
 
     gen = mt19937(rd());
     
-    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.1, gen);
+    CNN model = CNN(filter_sze, max_pool_sze, 1, 1, 16, 0.01, gen);
     matrix test = matrix(4, vector<double>(4)); 
     matrix filter = matrix(filter_sze, vector<double>(filter_sze));
 
@@ -28,14 +27,15 @@ int main(){
     matrix image;
     int label;
 
-    read_mnist_data("data-reading/train-images.idx3-ubyte", images, 1000);
-    read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 1000);
+    read_mnist_data("data-reading/train-images.idx3-ubyte", images, 500);
+    read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 500);
 
 
 
     for (auto epoch = 0; epoch < NUM_EPOCHS; epoch++){
-        double tmp = 0;
-        cout<<"running epoch "<<epoch<<endl;
+        double loss = 0;
+        double acc = 0;
+        cout<<"running epoch "<<epoch+1<<endl;
         for (auto i = 0; i < images.size(); i++){
             image = images[i];
             label = labels[i];
@@ -43,10 +43,21 @@ int main(){
             model.fwd_prop(image);
             model.back_prop(label);
 
-            tmp += model.cross_entropy_loss();
+            loss += model.cross_entropy_loss();
         }   
-        tmp /= images.size();
-        cout<<"Epoch: "<<epoch<<" ,Loss: "<<tmp<<endl;
+        loss /= images.size();
+
+        //computing accuracy
+        for (auto i = 0; i < images.size();i++){
+            image = images[i];
+            label = labels[i];
+
+            model.fwd_prop(image);
+            int tmp = model.check_label(label);
+            acc += tmp;
+        }
+        acc /= images.size();
+        cout<<"Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
     }
     
 
