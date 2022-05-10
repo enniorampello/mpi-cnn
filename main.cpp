@@ -40,7 +40,8 @@ int main(){
             image = images[i];
             label = labels[i];
             // print_matrix(subtract_matrices(images[i], images[i+1]));
-            model.fwd_prop(image);
+            
+            model.fwd_prop(image);            
             model.back_prop(label);
 
             loss += model.cross_entropy_loss();
@@ -48,15 +49,15 @@ int main(){
         loss /= images.size();
 
         //computing accuracy
-        for (auto i = 0; i < images.size();i++){
-            image = images[i];
-            label = labels[i];
+        // for (auto i = 0; i < images.size();i++){
+        //     image = images[i];
+        //     label = labels[i];
 
-            model.fwd_prop(image);
-            int tmp = model.check_label(label);
-            acc += tmp;
-        }
-        acc /= images.size();
+        //     model.fwd_prop(image);
+        //     int tmp = model.check_label(label);
+        //     acc += tmp;
+        // }
+        // acc /= images.size();
         cout<<"Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
     }
     
