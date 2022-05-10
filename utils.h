@@ -166,3 +166,46 @@ template <class T>
          c[i] = vector_addition(a[i], b[i]);
     return c;
 }
+
+double[] flatten_matrix(matrix a){
+    double b[a.size()*a[0].size()];
+
+    int s = a[0].size();
+    for (size_t i = 0; i < a.size(); i++)
+    {
+        for (size_t j = 0; j < a[0].size(); j++)
+        {
+            b[i*s + j] = a[i][j];
+        }
+        
+    }
+    return b;
+    
+
+    
+}
+
+double[] flatten_vector_matrix(vector<matrix> a){
+    // double b[a.size()*a[0].size()*a[0][0].size()];
+
+    vector<double> b;
+
+    for(int filter_num = 0; filter_num < a.size(); filter_num++)
+        for(auto && v : a[filter_num]){
+            b.insert(b.end(), v.begin(), v.end());
+        }
+    
+    return flatten_vector(b);
+
+
+}
+double[] flatten_vector(vector<double> a){
+    double b[a.size()];
+
+    for (int i = 0; i < a.size(); i++)
+    {
+        b[i] = a[i];
+    }
+    return b;
+     
+}
