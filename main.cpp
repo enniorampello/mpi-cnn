@@ -5,9 +5,9 @@
 #include "cnn.h"
 #include "data-reading/data-reading.h"
 
-#define NUM_PROCESSORS 2 // THIS NUMBER MUST MATCH THE ONE GIVEN IN THE COMMAND LINE
+#define NUM_PROCESSORS 8 // THIS NUMBER MUST MATCH THE ONE GIVEN IN THE COMMAND LINE
 #define NUM_EPOCHS 20
-#define NUM_IMAGES 1000
+#define NUM_IMAGES 1024
 #define NUM_FILTERS 2
 #define NUM_CLASSES 10
 #define FILTER_SIZE 3
@@ -66,6 +66,7 @@ int main(int argc, char *argv[]){
     gen = mt19937(rd());
     CNN model = CNN(FILTER_SIZE, max_pool_sze, NUM_FILTERS, 1, 16, 0.02, gen);
 
+
     for (auto epoch = 0; epoch < NUM_EPOCHS; epoch++){
         double loss = 0;
         double acc = 0;
@@ -106,6 +107,8 @@ int main(int argc, char *argv[]){
         unflatten_vector_of_matrices(model.filters, filters, NUM_FILTERS, FILTER_SIZE, FILTER_SIZE);
         unflatten_matrix(model.weights, weights, CONV_MAT_SIZE*NUM_FILTERS, NUM_CLASSES);
         unflatten_vector(model.bias, biases, NUM_CLASSES);
+
+        // if (p == 0) print_matrix(model.weights);
     }
     
     MPI_Finalize();
@@ -182,7 +185,8 @@ void average_weights(double *weights, int weight_size, int rank){
         auto idx = 0;
         for (auto p = 0; p < NUM_PROCESSORS; p++){
             for (auto i = 0; i < weight_size; i++){
-                weight_avg[i] += all_weights[p*weight_size+i];
+                weight_avg[i] += all_weights[idx];
+                idx++;
             }
         }
         for (auto i = 0; i < weight_size; i++)

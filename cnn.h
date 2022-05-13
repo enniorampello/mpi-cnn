@@ -11,6 +11,7 @@ using namespace std;
 using matrix = vector<vector<double>>;
 
 #define EPS 0.0001
+#define MAX_GRAD 15
 #define max(a,b) ((a)>(b)?(a):(b))
 
 class CNN {
@@ -88,6 +89,7 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
     init_filters();
     init_biases();
     init_weights();
+    out_prob = vector<double>(10);
 }
 
 double CNN::cross_entropy_loss(){
@@ -212,8 +214,7 @@ void CNN::softmax(){
         tmp[i] = exp(tmp[i]);
         tot_sum += tmp[i];
     }
-    out_prob.clear();
-    for(int i=0;i<tmp.size(); i++) out_prob.push_back(tmp[i]/tot_sum);
+    for(int i=0;i<tmp.size(); i++) out_prob[i] = tmp[i]/tot_sum;
 }
 
 void CNN::fully_connected(){
@@ -260,7 +261,6 @@ vector<matrix> CNN::softmax_backprop(){
     vector<matrix> d_L_d_inputs = vector<matrix>(conv_output.size(), matrix(conv_output[0].size(), vector<double>(conv_output[0][0].size())));
     matrix d_L_d_w = matrix(conv_out_flat.size(), vector<double>(out_prob.size()));
 
-
     float d_t_d_b = 1;
     float sum;
 
@@ -288,15 +288,31 @@ vector<matrix> CNN::softmax_backprop(){
     d_L_d_inputs_flat = multiply(d_L_d_t, weights);
 
     for (auto i = 0; i < weights.size(); i++)
-        for (auto j = 0; j < weights[0].size(); j++)
+        for (auto j = 0; j < weights[0].size(); j++){
+            if (d_L_d_w[i][i] > MAX_GRAD)
+                d_L_d_w[i][i] = MAX_GRAD;
+            else if (d_L_d_w[i][i] < -MAX_GRAD)
+                d_L_d_w[i][i] = -MAX_GRAD;
+               
             weights[i][j] -= lr * d_L_d_w[i][j];
-    for (auto i = 0; i < out_prob.size(); i++)
+        }
+    for (auto i = 0; i < out_prob.size(); i++){
+        if (d_L_d_b[i] > MAX_GRAD)
+            d_L_d_b[i] = MAX_GRAD;
+        else if (d_L_d_b[i] < -MAX_GRAD)
+            d_L_d_b[i] = -MAX_GRAD;
+            
         bias[i] -= lr * d_L_d_b[i];
+    }
     
     int idx = 0;
     for(int filter_num=0;filter_num<n_filters;filter_num++)
         for (auto i = 0; i < d_L_d_inputs[0].size(); i++)
             for (auto j = 0; j < d_L_d_inputs[0][0].size(); j++){
+                if (d_L_d_inputs_flat[idx] < -MAX_GRAD)
+                    d_L_d_inputs_flat[idx] = -MAX_GRAD;
+                else if (d_L_d_inputs_flat[idx] > MAX_GRAD)
+                    d_L_d_inputs_flat[idx] = MAX_GRAD;
                 d_L_d_inputs[filter_num][i][j] = d_L_d_inputs_flat[idx];
                 idx++;
             }
@@ -337,6 +353,11 @@ vector<matrix> CNN::max_pool_backprop(vector<matrix> d_L_d_out){
                 }   
             }
             d_L_d_input[filter_num][i*max_pool_size + max_k][i*max_pool_size + max_l] = d_L_d_out[filter_num][i][j];
+            if (d_L_d_input[filter_num][i*max_pool_size + max_k][i*max_pool_size + max_l] > MAX_GRAD)
+                d_L_d_input[filter_num][i*max_pool_size + max_k][i*max_pool_size + max_l] = MAX_GRAD;
+            else if (d_L_d_input[filter_num][i*max_pool_size + max_k][i*max_pool_size + max_l] < -MAX_GRAD)
+                d_L_d_input[filter_num][i*max_pool_size + max_k][i*max_pool_size + max_l] = -MAX_GRAD;
+            
         }
     }
     }
@@ -364,9 +385,20 @@ vector<matrix> CNN::convolution_backprop(vector<matrix> d_L_d_out){
             }
 
             d_L_d_filters[filter_num] = sum_matrices(d_L_d_filters[filter_num], multiply_scalar_matrix(d_L_d_out[filter_num][i][j], tmp));
+            
         }
     }
     filters[filter_num] = sum_matrices(filters[filter_num], multiply_scalar_matrix(-1*lr, d_L_d_filters[filter_num]));
+    }
+    for (auto n = 0; n < filters.size(); n++){
+        for(auto i = 0; i < filters[0].size(); i++){
+            for(auto j = 0; j < filters[0].size(); j++){
+                if (filters[n][i][j] > MAX_GRAD)
+                    filters[n][i][j] = MAX_GRAD;
+                else if (filters[n][i][j] < -MAX_GRAD)
+                    filters[n][i][j] = -MAX_GRAD;
+            }
+        }
     }
     return filters;
 }
