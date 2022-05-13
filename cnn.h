@@ -10,6 +10,7 @@
 using namespace std;
 using matrix = vector<vector<double>>;
 
+#define EPS 0.0001
 #define max(a,b) ((a)>(b)?(a):(b))
 
 class CNN {
@@ -27,10 +28,6 @@ class CNN {
         int label;
         vector<matrix> image_conv; // sample after convolution.
         vector<matrix> image_pool; // sample after max_pool
-        
-        vector<matrix> filters;
-        vector<double> bias;
-        matrix weights;
 
         vector<matrix> conv_output; // convolutional block output
         vector<double> conv_out_flat; // flatened output
@@ -54,6 +51,10 @@ class CNN {
 
     public:
         normal_distribution<double> normal;
+
+        vector<matrix> filters;
+        vector<double> bias;
+        matrix weights;
 
         CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, double learning_rate, mt19937 gen);
         void train(matrix sample); // call this for every sample
@@ -91,11 +92,12 @@ CNN::CNN(int fltr_sz, int max_pool_sz, int n_fltrs, int strd, int num_nodes, dou
 
 double CNN::cross_entropy_loss(){
     vector<int> label_vec(10, 0);
-    float loss = 0;
+    double loss = 0;
     label_vec[label] = 1;
 
     for(auto i = 0; i < 10; i++)
-        loss -= label_vec[i]*log(out_prob[i]);
+        loss -= label_vec[i]*log(out_prob[i]+EPS);
+    
     return loss;
 }
 
@@ -113,7 +115,7 @@ void CNN::init_filters(){
 
 void CNN::init_biases(){
     bias = vector<double>(num_classes);
-    for (int i = 0; i < n_filters; i++){
+    for (int i = 0; i < num_classes; i++){
         bias[i] = normal(gen);
     }
 }
@@ -123,7 +125,7 @@ void CNN::init_weights(){
     weights = matrix(size, vector<double>(num_classes));
     for(int c=0;c<num_classes;c++){
         for(int i=0;i<size;i++){
-                weights[i][c] = normal(gen); 
+                weights[i][c] = normal(gen);
             }
     }
 }
