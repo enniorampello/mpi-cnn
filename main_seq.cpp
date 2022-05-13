@@ -30,8 +30,6 @@ int main(){
     read_mnist_data("data-reading/train-images.idx3-ubyte", images, 500);
     read_mnist_labels("data-reading/train-labels.idx1-ubyte", labels, 500);
 
-
-
     for (auto epoch = 0; epoch < NUM_EPOCHS; epoch++){
         double loss = 0;
         double acc = 0;
@@ -60,7 +58,5 @@ int main(){
         acc /= images.size();
         cout<<"Epoch: "<<epoch+1<<", Loss: "<<loss<<", Accuracy: "<<acc<<endl;
     }
-    
-
     return 0;
 }
