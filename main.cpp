@@ -5,9 +5,9 @@
 #include "cnn.h"
 #include "data-reading/data-reading.h"
 
-#define NUM_PROCESSORS 8 // THIS NUMBER MUST MATCH THE ONE GIVEN IN THE COMMAND LINE
+#define NUM_PROCESSORS 4 // THIS NUMBER MUST MATCH THE ONE GIVEN IN THE COMMAND LINE
 #define NUM_EPOCHS 20
-#define NUM_IMAGES 1024
+#define NUM_IMAGES 4096
 #define NUM_FILTERS 2
 #define NUM_CLASSES 10
 #define FILTER_SIZE 3
@@ -116,9 +116,15 @@ int main(int argc, char *argv[]){
 }
 
 void distribute_data(vector<matrix> &images, vector<int> &labels, int rank){
-    double send_images[NUM_IMAGES*28*28], recv_images[NUM_IMAGES/NUM_PROCESSORS*28*28];
-    int send_labels[NUM_IMAGES], recv_labels[NUM_IMAGES/NUM_PROCESSORS];
-
+    double *send_images, *recv_images;
+    int *send_labels, *recv_labels;
+    
+    send_images = (double *) malloc(NUM_IMAGES*28*28*sizeof(double));
+    recv_images = (double *) malloc(NUM_IMAGES/NUM_PROCESSORS*28*28*sizeof(double));
+    send_labels = (int *) malloc(NUM_IMAGES*sizeof(int));
+    recv_labels = (int *) malloc(NUM_IMAGES/NUM_PROCESSORS*sizeof(int));
+    
+    // cout<<"I'm alive"<<endl;
     if (rank == 0){
         int idx = 0;
         for (auto n = 0; n < NUM_IMAGES; n++){
@@ -167,12 +173,20 @@ void distribute_data(vector<matrix> &images, vector<int> &labels, int rank){
             }
         labels[n] = recv_labels[n];
     }
+
+    free(send_images);
+    free(send_labels);
+    free(recv_images);
+    free(recv_labels);
 }
 
 void average_weights(double *weights, int weight_size, int rank){
     // int weight_size = CONV_MAT_SIZE*NUM_FILTERS*NUM_CLASSES;
-    double all_weights[NUM_PROCESSORS*weight_size];
-    double weight_avg[weight_size];
+    double *all_weights;
+    double *weight_avg;
+
+    all_weights = (double *) malloc(NUM_PROCESSORS*weight_size*sizeof(double));
+    weight_avg = (double *) malloc(weight_size*sizeof(double));
 
     MPI_Gather(weights, weight_size, MPI_DOUBLE, 
                all_weights, weight_size, MPI_DOUBLE, 
@@ -196,6 +210,9 @@ void average_weights(double *weights, int weight_size, int rank){
     MPI_Scatter(weight_avg, weight_size, MPI_DOUBLE,
                 weights, weight_size, MPI_DOUBLE, 
                 0, MPI_COMM_WORLD);
+
+    free(all_weights);
+    free(weight_avg);
 }
 
 void flatten_vector(vector<double> &vec, double *flat_vec, int dim1){
