@@ -184,9 +184,11 @@ void average_weights(double *weights, int weight_size, int rank){
     // int weight_size = CONV_MAT_SIZE*NUM_FILTERS*NUM_CLASSES;
     double *all_weights;
     double *weight_avg;
+    double* dis_weight_avg;
 
     all_weights = (double *) malloc(NUM_PROCESSORS*weight_size*sizeof(double));
     weight_avg = (double *) malloc(weight_size*sizeof(double));
+    dis_weight_avg = (double*)malloc(NUM_PROCESSORS * weight_size * sizeof(double));
 
     MPI_Gather(weights, weight_size, MPI_DOUBLE, 
                all_weights, weight_size, MPI_DOUBLE, 
@@ -205,12 +207,17 @@ void average_weights(double *weights, int weight_size, int rank){
         }
         for (auto i = 0; i < weight_size; i++)
             weight_avg[i] /= NUM_PROCESSORS;
+
+        for (int i = 0; i < NUM_PROCESSORS; i++) {
+            memcpy(&dis_weight_avg[i * weight_size], weight_avg, weight_size * sizeof(double));
+        }
     }
 
-    MPI_Scatter(weight_avg, weight_size, MPI_DOUBLE,
+    MPI_Scatter(dis_weight_avg, weight_size, MPI_DOUBLE,
                 weights, weight_size, MPI_DOUBLE, 
                 0, MPI_COMM_WORLD);
 
+    free(dis_weight_avg);
     free(all_weights);
     free(weight_avg);
 }
