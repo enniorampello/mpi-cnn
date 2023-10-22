@@ -34,7 +34,7 @@ int main(){
         double loss = 0;
         double acc = 0;
         cout<<"running epoch "<<epoch+1<<endl;
-        for (auto i = 0; i < images.size(); i++){
+        for (auto i = 0; i < images.size() -1; i++){
             image = images[i];
             label = labels[i];
             // print_matrix(subtract_matrices(images[i], images[i+1]));
